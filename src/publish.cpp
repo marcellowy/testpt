@@ -1,10 +1,7 @@
-﻿#include "publish.h"
+#include "publish.h"
 
-#ifdef _WIN32
-#include "MediaInfoDLL/MediaInfoDLL.h"
-#else
+//#include <MediaInfoDLL/MediaInfoDLL.h>
 #include <MediaInfo/MediaInfo.h>
-#endif // _WIN32
 
 #include <filesystem>
 
@@ -143,10 +140,10 @@ bool Publish::processFile(PublishObj& obj) {
         logw("get media info failed {}", av::str::toA(obj.fullpath));
         return false;
     }
-    if (!mediaInfo(obj, false)) {
+    /*if (!mediaInfo(obj, false)) {
         logw("get media info failed {}", av::str::toA(obj.fullpath));
         return false;
-    }
+    }*/
     logi("{}", av::str::toA(obj.mediainfo_json));
     logi("{}", av::str::toA(obj.mediainfo_text));
     return true; 
@@ -215,12 +212,9 @@ bool Publish::captureGraphics(PublishObj& obj) {
 
 bool Publish::mediaInfo(PublishObj& obj, bool json) {
 
-#ifdef _WIN32
-    MediaInfoDLL::MediaInfo MI;
-#else
+    
+    //MediaInfoDLL::MediaInfo MI;
     MediaInfoLib::MediaInfo MI;
-#endif // _WIN32
-
     if (!av::path::file_exists(obj.fullpath))
     {
         logw("{} not exists", av::str::toA(obj.fullpath));
@@ -228,12 +222,28 @@ bool Publish::mediaInfo(PublishObj& obj, bool json) {
     else {
         logw("{} exists", av::str::toA(obj.fullpath));
     }
+    
 
-    size_t ret =MI.Open("/home/marcello/tmp/1.ts");
+    if (MI.Open(av::str::toA(obj.fullpath)) == 0) {
+        logw("MI not ready");
+    }
+
+
+    //std::tstring cmd;
+    //cmd.append("mediainfo");
+    //cmd.append(" ");
+    //cmd.append(av::str::toA(obj.fullpath));
+    //system(cmd.c_str());
+
+    /*size_t ret = MI.Open(__T(obj.fullpath));
     if (ret == 0) {
         logw("open {} failed", av::str::toA(obj.fullpath));
         return false;
     }
+    logi("open {} succ", av::str::toA(obj.fullpath));*/
+
+    
+
    /* size_t ret = MI.Open(__T("/home/marcello/tmp/1.ts"));
     if (ret == 0) {
         logw("open {} failed", av::str::toA(obj.fullpath));

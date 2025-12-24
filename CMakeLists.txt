@@ -1,4 +1,4 @@
-﻿# CMakeList.txt: test 的 CMake 项目，在此处包括源代码并定义
+# CMakeList.txt: test 的 CMake 项目，在此处包括源代码并定义
 # 项目特定的逻辑。
 #
 cmake_minimum_required (VERSION 3.28)
@@ -42,13 +42,8 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/3rdparty/include
 	${CMAKE_SOURCE_DIR}/utils
     ${CMAKE_SOURCE_DIR}/src/site
+    /usr/include
 )
-
-if(!WIN32)
-    include_directories(
-        /usr/include
-    )
-endif()
 
 if(MSVC)
 	# if use ninja
