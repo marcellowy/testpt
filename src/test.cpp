@@ -14,6 +14,7 @@
 //#include "av_base64.h"
 #include "publish.h"
 #include "av_path.h"
+#include "ffmpeg.h"
 
 using namespace std;
 
@@ -41,6 +42,8 @@ int main()
 	av::path::create_dir(TEXT("中文目录"));
 	av::path::create_dir(TEXT("中文目录1"));
 	av::path::remove_dir(TEXT("中文目录1"));
+
+	//screenshot("/home/marcello/tmp/1.mp4");
 
 #ifdef _WIN32
 	Publish p(av::str::toT("D:\\Downloads\\tmp - 复制"));

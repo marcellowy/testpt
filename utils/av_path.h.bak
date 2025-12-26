@@ -14,7 +14,7 @@ namespace av {
 		bool remove_dir_all(const std::tstring& path);
 		bool remove_dir(const std::tstring& path);
 		bool remove_file(const std::tstring& path);
-		bool move_file(const std::tstring& source_path, const std::tstring& dest_path, bool force);
+		bool move_file_force(const std::tstring& source_path, const std::tstring& dest_path);
 		bool move_file(const std::tstring& source_path, const std::tstring& dest_path);
 	}
 }

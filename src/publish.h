@@ -29,7 +29,7 @@ protected:
 	bool captureGraphics(PublishObj& obj);
 
 	// 
-	bool mediaInfo(PublishObj& obj, bool json);
+	bool genMediaInfo(PublishObj& obj);
 private:
 	std::tstring dir_;
 };

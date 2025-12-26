@@ -124,40 +124,14 @@ bool av::path::remove_file(const std::tstring& path) {
 	return true;
 }
 
-bool av::path::move_file(const std::tstring& source_path, const std::tstring& dest_path, bool force) {
+bool av::path::move_file_force(const std::tstring& source_path, const std::tstring& dest_path) {
 	fs::path source_path_ = source_path;
 	fs::path dest_path_ = dest_path;
-	std::error_code ec;
-	if (!av::path::file_exists(source_path)) {
-		loge("file {} not exists", source_path);
-		return false;
-	}
-
-	// check dst
-	bool dest_exists = av::path::file_exists(dest_path);
-	if (!force && dest_exists) {
-		loge("dst {} exists", dest_path);
-		return false;
-	}
-
-	if (force && dest_exists) {
-		std::error_code ec;
-		fs::remove(dest_path, ec);
-		if (ec) {
-			loge("remove {} failed, err {}", dest_path, ec.message());
-			return false;
-		}
-	}
-
-	// rename
-	fs::rename(source_path, dest_path, ec);
-	if (ec) {
-		loge("rename {} to {} failed, err {}", source_path, dest_path, ec.message());
-		return false;
-	}
-	return true;
+	return false;
 }
 
 bool av::path::move_file(const std::tstring& source_path, const std::tstring& dest_path) {
-	return move_file(source_path, dest_path, false);
+	fs::path source_path_ = source_path;
+	fs::path dest_path_ = dest_path;
+	return false;
 }

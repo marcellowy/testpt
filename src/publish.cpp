@@ -1,13 +1,14 @@
 #include "publish.h"
 
-//#include <MediaInfoDLL/MediaInfoDLL.h>
-#include <MediaInfo/MediaInfo.h>
+#include "MediaInfoDLL/MediaInfoDLL.h"
+//#include <MediaInfo/MediaInfo.h>
 
 #include <filesystem>
 
 #include "av_log.h"
 #include "av_string.h"
 #include "av_path.h"
+#include "av_async.h"
 
 #include "config.h"
 #include "parse_name.h"
@@ -28,20 +29,27 @@ Publish::~Publish()
 }
 
 bool Publish::start(){
-    auto arr = readDir();
-    for (auto& tmp : arr) {
-        if (!getSiteType(tmp)) {
-            logw("dir {}, name {} get site type failed", av::str::toA(tmp.dir), av::str::toA(tmp.name));
-            continue;
-        }
-        if (!processFile(tmp)) {
-            logw("process file failed, dir {}, name {} get site type failed", av::str::toA(tmp.dir), av::str::toA(tmp.name));
-            break;
-        }
+    //auto arr = readDir();
+    //for (auto& tmp : arr) {
+    //    if (!getSiteType(tmp)) {
+    //        logw("dir {}, name {} get site type failed", av::str::toA(tmp.dir), av::str::toA(tmp.name));
+    //        continue;
+    //    }
+    //    if (!processFile(tmp)) {
+    //        logw("process file failed, dir {}, name {} get site type failed", av::str::toA(tmp.dir), av::str::toA(tmp.name));
+    //        break;
+    //    }
 
-        // if success
-        //break;
-    }
+    //    // if success
+    //    //break;
+    //}
+
+    PublishObj obj;
+    obj.fullpath = "/home/marcello/tmp/中.mp4";
+    obj.dir = "/home/marcello/tmp";
+    obj.name = "中.mp4";
+    genMediaInfo(obj);
+
     return false;
 }
 
@@ -136,11 +144,11 @@ bool Publish::processDir(const std::tstring& path) { return false;  }
 bool Publish::processFile(PublishObj& obj) {
     logi("process {}, {}", av::str::toA(obj.dir), av::str::toA(obj.name));
     tvname(obj);
-    if (!mediaInfo(obj, true)) {
+    /*if (!mediaInfo(obj, true)) {
         logw("get media info failed {}", av::str::toA(obj.fullpath));
         return false;
     }
-    /*if (!mediaInfo(obj, false)) {
+    if (!gen(obj, false)) {
         logw("get media info failed {}", av::str::toA(obj.fullpath));
         return false;
     }*/
@@ -210,51 +218,28 @@ bool Publish::captureGraphics(PublishObj& obj) {
     return false;
 }
 
-bool Publish::mediaInfo(PublishObj& obj, bool json) {
-
-    
-    //MediaInfoDLL::MediaInfo MI;
-    MediaInfoLib::MediaInfo MI;
-    if (!av::path::file_exists(obj.fullpath))
-    {
-        logw("{} not exists", av::str::toA(obj.fullpath));
-    }
-    else {
-        logw("{} exists", av::str::toA(obj.fullpath));
-    }
-    
-
-    if (MI.Open(av::str::toA(obj.fullpath)) == 0) {
-        logw("MI not ready");
-    }
-
-
-    //std::tstring cmd;
-    //cmd.append("mediainfo");
-    //cmd.append(" ");
-    //cmd.append(av::str::toA(obj.fullpath));
-    //system(cmd.c_str());
-
-    /*size_t ret = MI.Open(__T(obj.fullpath));
-    if (ret == 0) {
-        logw("open {} failed", av::str::toA(obj.fullpath));
+bool Publish::genMediaInfo(PublishObj& obj) {
+    MediaInfoDLL::MediaInfo MI;
+    auto new_path = av::path::append(obj.dir, "cc.mp4");
+    if (!av::path::move_file(obj.fullpath, new_path, true)) {
+        loge("move file failed");
         return false;
     }
-    logi("open {} succ", av::str::toA(obj.fullpath));*/
+    av::async::Exit exit([&new_path, &obj] {
+        if (!av::path::move_file(new_path, obj.fullpath)) {
+            loge("move file failed");
+        }
+    });
 
-    
-
-   /* size_t ret = MI.Open(__T("/home/marcello/tmp/1.ts"));
+    size_t ret = MI.Open(new_path);
     if (ret == 0) {
         logw("open {} failed", av::str::toA(obj.fullpath));
         return false;
     }
     MI.Option(__T("Complete"), __T("1"));
-    if (json) {
-        MI.Option(__T("Output"), __T("JSON"));
-        obj.mediainfo_json = MI.Inform();
-        return true;
-    }
-    obj.mediainfo_text = MI.Inform();*/
+    MI.Option(__T("Output"), __T("JSON"));
+    obj.mediainfo_json = MI.Inform();
+    MI.Option(__T("Output"), __T("TEXT"));
+    obj.mediainfo_text = MI.Inform();
     return true;
 }

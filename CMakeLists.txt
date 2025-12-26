@@ -19,9 +19,31 @@ project (${PROJECT_NAME})
 
 if(MSVC)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	add_compile_options("/utf-8")
 else()
 	# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+endif()
+
+if(WIN32)
+
+else()
+    find_package(PkgConfig REQUIRED)
+
+    find_library(MEDIAINFO_LIB mediainfo)
+    find_library(ZEN_LIB zen)
+
+    if (NOT MEDIAINFO_LIB OR NOT ZEN_LIB)
+        message(FATAL_ERROR "MediaInfo or ZenLib not found")
+    else()
+        message("found MediaInfo " ${MEDIAINFO_LIB})
+        message("found ZenLib " ${ZEN_LIB})
+    endif()
+
+    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
+        libavformat
+        libavcodec
+        libavutil
+        libswscale
+    )
 endif()
 
 file(GLOB SOURCE_FILE
@@ -40,12 +62,15 @@ add_library(${PROJECT_NAME}_lib ${SOURCE_FILE})
 
 include_directories(
 	${CMAKE_SOURCE_DIR}/3rdparty/include
+    ${CMAKE_SOURCE_DIR}/3rdparty/include/ffmpeg
 	${CMAKE_SOURCE_DIR}/utils
     ${CMAKE_SOURCE_DIR}/src/site
-    /usr/include
 )
 
 if(MSVC)
+
+    target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
+
 	# if use ninja
 	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -84,20 +109,13 @@ if(WIN32)
             $<TARGET_FILE_DIR:${PROJECT_NAME}>  # 可执行文件所在目录
     )
 else()
-
-    find_library(MEDIAINFO_LIB mediainfo)
-    find_library(ZEN_LIB zen)
-
-    if (NOT MEDIAINFO_LIB OR NOT ZEN_LIB)
-        message(FATAL_ERROR "MediaInfo or ZenLib not found")
-    else()
-        message("found MediaInfo " ${MEDIAINFO_LIB})
-        message("found ZenLib " ${ZEN_LIB})
-    endif()
-
     target_link_libraries(${PROJECT_NAME}
         ${MEDIAINFO_LIB}
         ${ZEN_LIB}
+    )
+    
+    target_link_libraries(${PROJECT_NAME}
+        PkgConfig::FFMPEG
     )
 endif()
 
