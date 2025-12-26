@@ -6,7 +6,7 @@
 
 namespace av {
 	namespace time {
-		std::chrono::steady_clock::time_point now();
+		std::chrono::system_clock::time_point now();
 
 		int64_t seconds();
 

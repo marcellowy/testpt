@@ -15,6 +15,7 @@
 #include "publish.h"
 #include "av_path.h"
 #include "ffmpeg.h"
+#include "av_time.h"
 
 using namespace std;
 
@@ -44,6 +45,8 @@ int main()
 	av::path::remove_dir(TEXT("中文目录1"));
 
 	screenshot("/home/marcello/tmp/1153734.mp4");
+
+	logi("{}, {}, {}", av::time::seconds(), av::time::milliseconds(), av::time::microseconds());
 
 	return 0;
 
