@@ -1,4 +1,4 @@
-﻿#ifndef TEST_CONFIG_H_
+#ifndef TEST_CONFIG_H_
 #define TEST_CONFIG_H_
 
 #include <string>

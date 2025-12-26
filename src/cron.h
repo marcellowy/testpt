@@ -1,4 +1,4 @@
-﻿#ifndef TEST_CRON_H_
+#ifndef TEST_CRON_H_
 #define TEST_CRON_H_
 #include <string>
 #include <chrono>

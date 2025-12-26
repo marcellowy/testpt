@@ -1,4 +1,4 @@
-﻿#include "parse_name.h"
+#include "parse_name.h"
 
 #include <regex>
 #include <string>

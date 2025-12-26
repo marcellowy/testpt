@@ -1,4 +1,4 @@
-﻿#ifndef MTEAM_CATEGORY_H_
+#ifndef MTEAM_CATEGORY_H_
 #define MTEAM_CATEGORY_H_
 
 #include "av_base.h"

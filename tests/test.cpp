@@ -1,4 +1,4 @@
-﻿#include "parse_name.h"
+#include "parse_name.h"
 #include "defined.h"
 #include <iostream>
 #include "logger.h"

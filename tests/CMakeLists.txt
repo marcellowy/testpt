@@ -1,4 +1,4 @@
-﻿set(PROJECT_NAME "chadtest1")
+set(PROJECT_NAME "chadtest1")
 
 project (${PROJECT_NAME})
 

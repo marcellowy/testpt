@@ -1,4 +1,4 @@
-﻿#ifndef AV_PATH_H_
+#ifndef AV_PATH_H_
 #define AV_PATH_H_
 
 #include "av_string.h"

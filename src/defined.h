@@ -1,4 +1,4 @@
-﻿#ifndef TEST_DEFINED_H_
+#ifndef TEST_DEFINED_H_
 #define TEST_DEFINED_H_
 
 #include <string>

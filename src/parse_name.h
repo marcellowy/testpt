@@ -1,4 +1,4 @@
-﻿#ifndef TEST_PUBLISH_SPORT_NAME_H_
+#ifndef TEST_PUBLISH_SPORT_NAME_H_
 #define TEST_PUBLISH_SPORT_NAME_H_
 
 #include "defined.h"

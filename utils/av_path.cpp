@@ -1,4 +1,4 @@
-﻿#include "av_base.h"
+#include "av_base.h"
 #include "av_path.h"
 
 #include <filesystem>

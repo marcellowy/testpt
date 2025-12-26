@@ -1,4 +1,4 @@
-﻿#ifndef AV_STRING_H_
+#ifndef AV_STRING_H_
 #define AV_STRING_H_
 
 #include "av_base.h"

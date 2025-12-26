@@ -1,4 +1,4 @@
-﻿#ifndef TEST_PUBLISH_H_
+#ifndef TEST_PUBLISH_H_
 #define TEST_PUBLISH_H_
 
 #include <string>

@@ -1,4 +1,4 @@
-﻿#include "config.h"
+#include "config.h"
 #include <iostream>
 
 bool Config::parse(const std::tstring& toml_file) {

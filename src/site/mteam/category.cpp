@@ -1,4 +1,4 @@
-﻿#include "category.h"
+#include "category.h"
 
 std::tstring mteam::category::to_string(Id id) {
 	switch (id) {

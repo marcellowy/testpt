@@ -1,4 +1,4 @@
-﻿#include "cron.h"
+#include "cron.h"
 #include "av_log.h"
 
 Cron::Cron(const std::tstring& name, const std::tstring& cronexpr, std::function<void()> task) :

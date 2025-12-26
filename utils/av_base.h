@@ -1,4 +1,4 @@
-﻿#ifndef AV_BASE_H_
+#ifndef AV_BASE_H_
 #define AV_BASE_H_
 
 #ifdef _WIN32

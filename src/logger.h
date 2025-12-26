@@ -1,4 +1,4 @@
-﻿#ifndef TEST_LOGGER_H_
+#ifndef TEST_LOGGER_H_
 #define TEST_LOGGER_H_
 #include "spdlog/spdlog.h"
 #include <spdlog/sinks/rotating_file_sink.h>
