@@ -9,6 +9,7 @@
 #include "av_string.h"
 #include "av_path.h"
 #include "av_async.h"
+#include "av_time.h"
 
 #include "config.h"
 #include "parse_name.h"
@@ -171,7 +172,7 @@ std::vector<PublishObj> Publish::readDir() {
         PublishObj obj;
         obj.name = av::str::toT( av::str::toUtf8(entry.path().filename().string()));
         // 
-        if (obj.name.find(TEXT("TPTV")) != std::string::npos) {
+        if (obj.name.find(TEXT("TPTV")) != std::tstring::npos) {
             // published
             continue;
         }
@@ -220,7 +221,15 @@ bool Publish::captureGraphics(PublishObj& obj) {
 
 bool Publish::genMediaInfo(PublishObj& obj) {
     MediaInfoDLL::MediaInfo MI;
-    auto new_path = av::path::append(obj.dir, "cc.mp4");
+    std::tstring tmp_name = std::to_string(av::time::milliseconds());
+    tmp_name.append(".ts");
+    auto new_path = av::path::append(obj.dir, tmp_name);
+    if (av::path::file_exists(new_path)) {
+        if (!av::path::remove_file(new_path)) {
+            loge("new tmp file {} exists, but can not remove", av::str::toA(new_path));
+            return false;
+        }
+    }
     if (!av::path::move_file(obj.fullpath, new_path, true)) {
         loge("move file failed");
         return false;

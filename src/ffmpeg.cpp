@@ -36,14 +36,14 @@ static enum AVPixelFormat get_format(AVCodecContext* ctx, const enum AVPixelForm
     return pix_fmts[0];
 }
 
-bool screenshot(const std::string& video)
+bool screenshot(const std::tstring& video)
 {
     //const char* input = "/home/marcello/tmp/1.mp4";
     ////const char* input = "test.mp4";     // 输入视频文件
     //const char* output = "out.png";       // 输出 PNG 文件
     //int screenshot_sec = 5;               // 截第 5 秒的帧
     // "/home/marcello/tmp/1.mp4"
-    const char* filename = video.c_str();
+    const char* filename = av::str::toA(video).c_str();
 
     AVFormatContext* fmt_ctx = nullptr;
     if (avformat_open_input(&fmt_ctx, filename, nullptr, nullptr) != 0) {
