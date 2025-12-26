@@ -127,104 +127,127 @@ bool screenshot(const std::string& video)
     struct SwsContext* sws_ctx = nullptr;
 
     // move frame to special
-    int64_t ts = 200 * AV_TIME_BASE;
-    av_seek_frame(fmt_ctx, video_stream_index, ts, AVSEEK_FLAG_BACKWARD);
-    avcodec_flush_buffers(codec_ctx);
+    std::vector<int64_t> tt = { 70 * AV_TIME_BASE, 120 * AV_TIME_BASE , 180 * AV_TIME_BASE };
+    
+    //int64_t ts = 200 * AV_TIME_BASE;
+    //av_seek_frame(fmt_ctx, video_stream_index, tt[0], AVSEEK_FLAG_BACKWARD);
+    //avcodec_flush_buffers(codec_ctx);
 
-    // 读取第一帧
-    while (av_read_frame(fmt_ctx, pkt) >= 0) {
-        if (pkt->stream_index == video_stream_index) {
-            if (avcodec_send_packet(codec_ctx, pkt) == 0) {
-                if (avcodec_receive_frame(codec_ctx, frame) == 0) {
+    for (int i = 0; i < tt.size(); i++) {
+        if (tt[i] > fmt_ctx->duration) {
+            continue;
+        }
 
-                    if (sws_ctx == nullptr) {
-                        AVPixelFormat src_fmt =
-                            static_cast<AVPixelFormat>(frame->format);
-                        sws_ctx = sws_getContext(codec_ctx->width, codec_ctx->height, src_fmt,
-                            dst_width, dst_height, png_ctx->pix_fmt,
-                            SWS_BILINEAR, nullptr, nullptr, nullptr);
-                    }
+        avcodec_flush_buffers(codec_ctx);
+        av_seek_frame(fmt_ctx, -1, tt[i], AVSEEK_FLAG_BACKWARD);
 
-                    // key frame
-                    //if (frame->flags & AV_FRAME_FLAG_KEY) {
-                    //    logi("skip not key frame");
-                    //    continue;
-                    //}
+        // 读取第一帧
+        while (av_read_frame(fmt_ctx, pkt) >= 0) {
+            if (pkt->stream_index == video_stream_index) {
+                if (avcodec_send_packet(codec_ctx, pkt) == 0) {
+                    if (avcodec_receive_frame(codec_ctx, frame) == 0) {
 
-                    {
-                        sws_scale(sws_ctx, frame->data, frame->linesize, 0, codec_ctx->height,
-                            png_frame->data, png_frame->linesize);
-
-                        // 
-                        AVPacket* png_pkt = av_packet_alloc();
-                        av_init_packet(png_pkt);
-                        png_pkt->data = nullptr;
-                        png_pkt->size = 0;
-
-                        // 
-                        if (auto ret = avcodec_send_frame(png_ctx, png_frame); ret != 0) {
-                            logw("avcodec_send_frame failed! ret = {}", ret);
-                            continue;
+                        if (sws_ctx == nullptr) {
+                            AVPixelFormat src_fmt =
+                                static_cast<AVPixelFormat>(frame->format);
+                            sws_ctx = sws_getContext(codec_ctx->width, codec_ctx->height, src_fmt,
+                                dst_width, dst_height, png_ctx->pix_fmt,
+                                SWS_BILINEAR, nullptr, nullptr, nullptr);
                         }
 
-                        //
-                        if (auto ret = avcodec_receive_packet(png_ctx, png_pkt); ret != 0) {
-                            logw("avcodec_receive_packet failed! ret = {}", ret);
-                            continue;
+                        // key frame
+                        //if (frame->flags & AV_FRAME_FLAG_KEY) {
+                        //    logi("skip not key frame");
+                        //    continue;
+                        //}
+
+                        {
+                            sws_scale(sws_ctx, frame->data, frame->linesize, 0, codec_ctx->height,
+                                png_frame->data, png_frame->linesize);
+
+                            // 
+                            AVPacket* png_pkt = av_packet_alloc();
+                            av_init_packet(png_pkt);
+                            png_pkt->data = nullptr;
+                            png_pkt->size = 0;
+                            av::async::Exit exit_png_pkt([&png_pkt] {
+                                av_packet_free(&png_pkt);
+                                });
+
+                            // 
+                            if (auto ret = avcodec_send_frame(png_ctx, png_frame); ret != 0) {
+                                logw("avcodec_send_frame failed! ret = {}", ret);
+                                continue;
+                            }
+
+                            //
+                            if (auto ret = avcodec_receive_packet(png_ctx, png_pkt); ret != 0) {
+                                logw("avcodec_receive_packet failed! ret = {}", ret);
+                                continue;
+                            }
+
+                            // save
+                            char filename[128];
+                            sprintf(filename, "frame%ld.png", i);
+                            FILE* f = fopen(filename, "wb");
+                            if (f == NULL) {
+                                loge("open {} failed", av::str::toA(filename));
+                                continue;
+                            }
+                            av::async::Exit exit_f([&f] {
+                                fclose(f);
+                                });
+                            fwrite(png_pkt->data, 1, png_pkt->size, f);
                         }
 
-                        // save
-                        FILE* f = fopen("frame1.png", "wb");
-                        fwrite(png_pkt->data, 1, png_pkt->size, f);
-                        fclose(f);
+                        /*const AVCodec* jpgCodec = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
+                        AVCodecContext* jpgCtx = avcodec_alloc_context3(jpgCodec);
+                        AVDictionary* opts = nullptr;
+                        av_dict_set(&opts, "jpeg_quality", "100", 0); // 0 ~ 100，默认 75
+
+                        jpgCtx->bit_rate = 4000000;
+                        jpgCtx->width = width;
+                        jpgCtx->height = height;
+                        jpgCtx->time_base = { 1, 25 };
+                        jpgCtx->pix_fmt = AV_PIX_FMT_YUVJ420P; // MJPEG要求YUV
+                        jpgCtx->color_range = AVCOL_RANGE_JPEG;
+
+                        avcodec_open2(jpgCtx, jpgCodec, &opts);
+
+                        AVFrame* jpgFrame = av_frame_alloc();
+                        jpgFrame->format = jpgCtx->pix_fmt;
+                        jpgFrame->width = width;
+                        jpgFrame->height = height;
+                        av_image_alloc(jpgFrame->data, jpgFrame->linesize, width, height, jpgCtx->pix_fmt, 1);
+
+                        struct SwsContext* sws_ctx = sws_getContext(width, height, AV_PIX_FMT_YUVJ420P,
+                            width, height, AV_PIX_FMT_YUVJ420P,
+                            SWS_LANCZOS, nullptr, nullptr, nullptr);
+
+                        sws_scale(sws_ctx, frame->data, frame->linesize, 0, height,
+                            jpgFrame->data, jpgFrame->linesize);
+
+                        AVPacket* jpgPkt = av_packet_alloc();
+                        av_init_packet(jpgPkt);
+                        jpgPkt->data = nullptr;
+                        jpgPkt->size = 0;
+
+                        avcodec_send_frame(jpgCtx, jpgFrame);
+                        avcodec_receive_packet(jpgCtx, jpgPkt);
+
+                        av_dict_free(&opts);
+
+                        FILE* f = fopen("frame.jpg", "wb");
+                        fwrite(jpgPkt->data, 1, jpgPkt->size, f);
+                        fclose(f);*/
+
+
+                        break; // 只抓第一帧
                     }
-
-                    /*const AVCodec* jpgCodec = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
-                    AVCodecContext* jpgCtx = avcodec_alloc_context3(jpgCodec);
-                    AVDictionary* opts = nullptr;
-                    av_dict_set(&opts, "jpeg_quality", "100", 0); // 0 ~ 100，默认 75
-
-                    jpgCtx->bit_rate = 4000000;
-                    jpgCtx->width = width;
-                    jpgCtx->height = height;
-                    jpgCtx->time_base = { 1, 25 };
-                    jpgCtx->pix_fmt = AV_PIX_FMT_YUVJ420P; // MJPEG要求YUV
-                    jpgCtx->color_range = AVCOL_RANGE_JPEG;
-
-                    avcodec_open2(jpgCtx, jpgCodec, &opts);
-
-                    AVFrame* jpgFrame = av_frame_alloc();
-                    jpgFrame->format = jpgCtx->pix_fmt;
-                    jpgFrame->width = width;
-                    jpgFrame->height = height;
-                    av_image_alloc(jpgFrame->data, jpgFrame->linesize, width, height, jpgCtx->pix_fmt, 1);
-
-                    struct SwsContext* sws_ctx = sws_getContext(width, height, AV_PIX_FMT_YUVJ420P,
-                        width, height, AV_PIX_FMT_YUVJ420P,
-                        SWS_LANCZOS, nullptr, nullptr, nullptr);
-
-                    sws_scale(sws_ctx, frame->data, frame->linesize, 0, height,
-                        jpgFrame->data, jpgFrame->linesize);
-
-                    AVPacket* jpgPkt = av_packet_alloc();
-                    av_init_packet(jpgPkt);
-                    jpgPkt->data = nullptr;
-                    jpgPkt->size = 0;
-
-                    avcodec_send_frame(jpgCtx, jpgFrame);
-                    avcodec_receive_packet(jpgCtx, jpgPkt);
-
-                    av_dict_free(&opts);
-
-                    FILE* f = fopen("frame.jpg", "wb");
-                    fwrite(jpgPkt->data, 1, jpgPkt->size, f);
-                    fclose(f);*/
-
-                    break; // 只抓第一帧
                 }
             }
+            av_packet_unref(pkt);
         }
-        av_packet_unref(pkt);
     }
 
     return 0;

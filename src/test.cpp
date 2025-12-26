@@ -43,7 +43,9 @@ int main()
 	av::path::create_dir(TEXT("中文目录1"));
 	av::path::remove_dir(TEXT("中文目录1"));
 
-	//screenshot("/home/marcello/tmp/1.mp4");
+	screenshot("/home/marcello/tmp/1153734.mp4");
+
+	return 0;
 
 #ifdef _WIN32
 	Publish p(av::str::toT("D:\\Downloads\\tmp - 复制"));
